@@ -29,16 +29,23 @@ const DataCleaningApp = () => {
       }
     }).filter(record => record !== null);
 
-    await setRecords(parsedRecords);
-    const progress = parsedRecords.reduce((acc, record) => {
-      if(record.approve !== null) acc++;
-      return acc;
-    }, 0);
-    console.log(progress)
-    setCurrentIndex(progress-1);
-    if (parsedRecords[progress-1]) {
-      setEditedInput(parsedRecords[progress-1].input);
-      setEditedOutput(parsedRecords[progress-1].output || '');
+    // 最後に編集されたレコードのインデックスを探す
+    let lastEditedIndex = parsedRecords.length - 1;
+    for (let i = parsedRecords.length - 1; i >= 0; i--) {
+      if (parsedRecords[i].approve !== null) {
+        lastEditedIndex = i + 1;
+        if (lastEditedIndex >= parsedRecords.length) {
+          lastEditedIndex = parsedRecords.length - 1;
+        }
+        break;
+      }
+    }
+
+    setRecords(parsedRecords);
+    setCurrentIndex(lastEditedIndex);
+    if (parsedRecords[lastEditedIndex]) {
+      setEditedInput(parsedRecords[lastEditedIndex].input);
+      setEditedOutput(parsedRecords[lastEditedIndex].output || '');
     }
   };
 
@@ -79,6 +86,12 @@ const DataCleaningApp = () => {
       setCurrentIndex(currentIndex - 1);
       setEditedInput(records[currentIndex - 1].input);
       setEditedOutput(records[currentIndex - 1]?.output || '');
+    }
+  };
+
+  const handleSelectOutput = (outputType) => {
+    if (currentRecord) {
+      setEditedOutput(currentRecord[outputType]);
     }
   };
 
@@ -157,8 +170,42 @@ const DataCleaningApp = () => {
               />
             </div>
 
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <label className="block font-medium">出力1:</label>
+                  <Button
+                    onClick={() => handleSelectOutput('output1')}
+                    variant="outline"
+                    size="sm"
+                  >
+                    この出力を選択
+                  </Button>
+                </div>
+                <div className="p-4 bg-gray-50 rounded-md whitespace-pre-wrap">
+                  {currentRecord?.output1 || '出力1なし'}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <label className="block font-medium">出力2:</label>
+                  <Button
+                    onClick={() => handleSelectOutput('output2')}
+                    variant="outline"
+                    size="sm"
+                  >
+                    この出力を選択
+                  </Button>
+                </div>
+                <div className="p-4 bg-gray-50 rounded-md whitespace-pre-wrap">
+                  {currentRecord?.output2 || '出力2なし'}
+                </div>
+              </div>
+            </div>
+
             <div className="space-y-2">
-              <label className="block font-medium">出力:</label>
+              <label className="block font-medium">編集中の出力:</label>
               <Textarea
                 value={editedOutput}
                 onChange={(e) => setEditedOutput(e.target.value)}
@@ -198,7 +245,7 @@ const DataCleaningApp = () => {
               </div>
             </div>
 
-            {currentRecord.approve !== null && (
+            {currentRecord?.approve !== null && (
               <div className={`text-center p-2 rounded ${
                 currentRecord.approve ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
               }`}>
