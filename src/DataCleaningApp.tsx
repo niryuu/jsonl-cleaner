@@ -165,7 +165,7 @@ const DataCleaningApp = () => {
               <Textarea
                 value={editedInput}
                 onChange={(e) => setEditedInput(e.target.value)}
-                rows={4}
+                rows={10}
                 className="w-full"
               />
             </div>
